@@ -24,23 +24,20 @@ const evaluate = (value) => {
 };
 
 function themifyMacro({ references, babel: { types: t } }) {
-  references.default.forEach((referencePath) => {
-    if (
-      !referencePath.parentPath.hub.file.code.includes(
-        "import styled from styled-components"
+  const firstPath = references.default[0];
+
+  const program = firstPath.find((p) => p.isProgram());
+  if (!firstPath.parentPath.hub.file.code.includes("styled-components")) {
+    program.unshiftContainer(
+      "body",
+      t.importDeclaration(
+        [t.importDefaultSpecifier(t.identifier("styled"))],
+        t.stringLiteral("styled-components")
       )
-    ) {
-      const program = referencePath.find((p) => p.isProgram());
+    );
+  }
 
-      program.unshiftContainer(
-        "body",
-        t.importDeclaration(
-          [t.importDefaultSpecifier(t.identifier("styled"))],
-          t.stringLiteral("styled-components")
-        )
-      );
-    }
-
+  references.default.forEach((referencePath) => {
     const valueString =
       referencePath.parentPath.parent.quasi.quasis[0].value.raw;
 
